@@ -20,30 +20,33 @@ const ExpertRequestTablePage = () => {
     column: '',
     textQuery: '',
   });
-
-  useEffect(() => {
+  const fetchExpertRequests = () => {
     ExpertRequestService.getAllExpertRequests()
       .then(response => {
-        setExpertRequests(response.data.map(request => ({
+        const formattedRequests = response.data.map(request => ({
           ...request,
           date: formatDate(request.date),
           createdAt: formatDate(request.createdAt),
           expertName: request.expert ? request.expert.name : 'אין',
-          // Assuming customer name and property city name are nested within the 'report' object
           customerName: request.report?.customer?.name || 'N/A',
           propertyCityName: request.report?.property?.cityName || 'N/A',
           propertyStreetName: request.report?.property?.street || 'N/A',
           propertyHouseNumber: request.report?.property?.propertyNumber || 'N/A',
           reportindex: request.report?.index || 'N/A',
           status: request.status || 'N/A',
-
-        })));
+        }));
+        formattedRequests.sort((a, b) =>a.status.localeCompare(b.status));
+  
+        setExpertRequests(formattedRequests);
       })
       .catch(error => console.error('Error fetching expert requests:', error));
+  };
+  useEffect(() => {
+    fetchExpertRequests();
   }, []);
   
+  
   const handleAddNew = () => {
-    navigate('/add-expert-request');
   };
 
   const formatDate = (dateString) => {
@@ -53,8 +56,8 @@ const ExpertRequestTablePage = () => {
   const handleApprove = (row) => {
     ExpertRequestService.updateExpertRequest(row._id, { status: 'accepted', })
       .then(() => {
-       
-      })  
+        fetchExpertRequests();
+            })  
       .catch(error => {
         console.error('Error updating expert request:', error);
       } 
@@ -95,6 +98,14 @@ const ExpertRequestTablePage = () => {
               </Fab>
             </Tooltip>
           );
+        case 'rejected':
+          return (
+            <Tooltip title="בקשה נדחתה">
+              <Fab color="secondary" size="small" disabled>
+              </Fab>
+            </Tooltip>
+          );
+          
     
           };
    

@@ -10,20 +10,36 @@ import FeedbackDialog from '../../components/common/FeedbackDialog';
 const NewReportPage = () => {
   const [feedbackDialog, setFeedbackDialog] = useState({ open: false, message: '', severity: '' });
   const handleCloseDialog = () => {
-
     setFeedbackDialog({ ...feedbackDialog, open: false });
-    console.log('h');
-  };
 
+    if (feedbackDialog.severity === 'success') {
+      navigate('/reports');
+    }
+    setFeedbackDialog({ ...feedbackDialog, open: false });
+  };
+  const validateDate = (datesArray) => {
+    if (datesArray.length === 0) return 'עליך לבחור לפחות תאריך אחד';
+    for (let dateObj of datesArray) {
+      // Assuming each dateObj is { date: 'yyyy-mm-dd', time: 'HH:MM' }
+      if (!dateObj.date || !Date.parse(dateObj.date)) {
+        return 'אחד או יותר מהתאריכים שגויים';
+      }
+    }
+    return ''; // No errors
+  };
   const validate = (name, value) => {
     if (value.trim() === '') {
       switch (name) {
+       
+      case 'description':
+        return 'עליך להזין תיאור';
       case 'subject':
-        return 'עליך להזין נושא';
-      
+        return 'עליך להזין תחום';
       }
     }
     switch (name) {
+      case 'description':
+        return /^[\u0590-\u05FF0-9 ]+$/.test(value) ? '' : 'הזן רק אותיות עבריות ומספרים';
       case 'subject':
         return /^[\u0590-\u05FF0-9 ]+$/.test(value) ? '' : 'הזן רק אותיות עבריות ומספרים';
      
@@ -56,7 +72,12 @@ const navigate = useNavigate();
     event.preventDefault();
     // Validate form data
     const errors = {
+   
+      customer: reportData.customer ? '' : 'עליך לבחור לקוח',
+      property: reportData.property ? '' : 'עליך לבחור נכס',
+      dates: validateDate(reportData.dates),
       subject: validate('subject', reportData.subject),
+      description: validate('description', reportData.description),
     };
 
     const firstError = Object.values(errors).find(error => error !== '');
@@ -90,7 +111,7 @@ const navigate = useNavigate();
     ReportService.createReport(formData)
       .then(response => {
         console.log('Report created successfully:', response);
-        navigate('/reports');
+        setFeedbackDialog({ open: true, message: 'דוח נוצר בהצלחה', severity: 'success' });
       })
       .catch(error => {
         console.error('Error creating report:', error);

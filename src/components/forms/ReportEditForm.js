@@ -10,7 +10,9 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import PhotoManager from '../common/PhotoManager';
 import theme from '../../theme';
 import Sidebar from '../layout/Sidebar';
+import FeedbackDialog from '../common/FeedbackDialog';
 const ReportEditPage = () => {
+  const [feedbackDialog, setFeedbackDialog] = useState({ open: false, message: '', severity: '' });
   const { reportId } = useParams();
   const [newPhotos, setNewPhotos] = useState([]);
   const [report, setReport] = useState({ clientPhotos: [], findingsPhotos: [], availableStartingDates: []});
@@ -23,6 +25,12 @@ const [availableStartingDates, setAvailableStartingDates] = useState([]);
   const [description, setDescription] = useState('');
   const [findings, setFindings] = useState([]);
   const [newFinding, setNewFinding] = useState('');
+  const onCloseFeedbackDialog = () => {
+    setFeedbackDialog({ ...feedbackDialog, open: false });
+
+    
+
+  };
   const handleFileSelect = (event) => {
     if (event.target.files) {
       const selectedFiles = Array.from(event.target.files);
@@ -42,8 +50,8 @@ const [availableStartingDates, setAvailableStartingDates] = useState([]);
               time: dateTime.toTimeString().split(' ')[0]  // Extract time part
             };
           });
+          
           setFindings(response.data.findings || []);
-
           setAvailableStartingDates(formattedDates);
           setSubject(response.data.subject);
           setDescription(response.data.description);
@@ -127,7 +135,7 @@ const handleRemoveFinding = (index) => {
     });
     try {
       // Send both new photos and removed photo URLs to the server
-      await ReportService.updateReportPhotos(
+      const  response=await ReportService.updateReportPhotos(
         reportId, 
         newPhotos, 
         removedPhotos, 
@@ -138,11 +146,15 @@ const handleRemoveFinding = (index) => {
         description,
         findings 
       );      
+      if (response.status === 200) {
+        setFeedbackDialog({ open: true, message: 'דוח עודכן בהצלחה', severity: 'success' });
+      }
       // Update the report state
       const updatedClientPhotos = [
         ...report.clientPhotos.filter(url => !removedPhotos.includes(url)),
         ...newPhotos.map(photo => URL.createObjectURL(photo))
       ];
+
       setReport({ ...report, clientPhotos: updatedClientPhotos });
   
       // Clear the newPhotos and removedPhotos states
@@ -157,21 +169,23 @@ const handleRemoveFinding = (index) => {
     return (
       <Box sx={{ display: 'flex' }}>
         <Sidebar />
-        <Box component="main" sx={{ flexGrow: 1, p: 3, backgroundColor: theme.palette.background.default }}>
-          <Paper elevation={1} sx={{ maxWidth: 960, mx: 'auto', p: 3, backgroundColor: theme.palette.background.paper, border: '1px solid #e0e0e0' }}>
-            <Typography  variant="h4" align='center' gutterBottom color={theme.palette.primary.main}>Edit Report</Typography>
-  
-            <Card elevation={0} sx={{ mb: 3, border: '1px solid #e0e0e0' }}>
-              <CardContent>
-                <Typography variant="h6" color={theme.palette.primary.dark}>Customer Details</Typography>
-                <Typography variant="body2">Name: {report.customer?.name}</Typography>
-                <Typography variant="body2">Property: {`${report.property?.cityName} ${report.property?.street} ${report.property?.propertyNumber}`}</Typography>
+        <Box component="main" sx={{ flexGrow: 1, p: 2, backgroundColor: theme.palette.background.default }}>
+          <Paper elevation={1} sx={{ maxWidth: 960, mx: 'auto', p: 2, backgroundColor: theme.palette.background.paper, border: '1px solid #e0e0e0' }}>
+            <Typography  variant="h4" align='center' gutterBottom color={theme.palette.primary.main}>עדכון דוח</Typography>
+            <Typography variant="h6" color={theme.palette.primary.dark}>פרטי לקוח</Typography>
+
+            <Card elevation={0} sx={{height:'10vh', mb: 0.5, border: '1px solid #e0e0e0' }}>
+
+            <CardContent sx={{ p: 2 }}> {/* Reduced padding */}
+                <Typography variant="body2">שם: {report.customer?.name}</Typography>
+                <Typography variant="body2">נכס: {`${report.property?.cityName} ${report.property?.street} ${report.property?.propertyNumber}`}</Typography>
               </CardContent>
             </Card>
+            <Typography variant="h6" color={theme.palette.primary.dark}>פירוט הדוח</Typography>
 
-            <Card sx={{ mb: 3, border: '1px solid #e0e0e0', boxShadow: 'none' }}>
+            <Card sx={{ mb: 1, border: '1px solid #e0e0e0', boxShadow: 'none' }}>
+
   <CardContent>
-    <Typography variant="h6" align='center' color={theme.palette.primary.dark}>Report Information</Typography>
     <TextField
       fullWidth
       label="Subject"
@@ -190,10 +204,10 @@ const handleRemoveFinding = (index) => {
     />
   </CardContent>
 </Card>
+<Typography variant="h6"   color={theme.palette.primary.dark}>תאריכי התחלה אפשריים</Typography>
 
 <Card sx={{ mb: 3, border: '1px solid #e0e0e0', boxShadow: 'none' }}>
   <CardContent>
-              <Typography variant="h6"  align='center' color={theme.palette.primary.dark}>Available Starting Dates</Typography>
           {availableStartingDates.map((dateTime, index) => (
             <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <DateTimePicker
@@ -209,14 +223,15 @@ const handleRemoveFinding = (index) => {
             </Box>
           ))}
           <Button startIcon={<AddCircleOutlineIcon />} onClick={addDate} sx={{ mb: 2 }}>
-            Add Date
+              הוסף תאריך
           </Button>
 
 </CardContent>
 </Card>
+<Typography variant="h6"  color={theme.palette.primary.dark}>תמונות לקוח</Typography>
+
 <Card sx={{ mb: 3, border: '1px solid #e0e0e0', boxShadow: 'none' }}>
   <CardContent>
-              <Typography variant="h6" align='center' color={theme.palette.primary.dark}>Client Photos</Typography>
           <PhotoManager
             photoList={report.clientPhotos}
             photoNames={report.clientPhotoNames}
@@ -227,9 +242,10 @@ const handleRemoveFinding = (index) => {
           />
           </CardContent>
           </Card>
+          <Typography variant="h6" color={theme.palette.primary.dark}>תמונות סיכום בדיקה</Typography>
+
           <Card sx={{ mb: 3, border: '1px solid #e0e0e0', boxShadow: 'none' }}>
   <CardContent>
-              <Typography variant="h6" color={theme.palette.primary.dark}>Findings Photos</Typography>
           <PhotoManager
             photoList={report.findingsPhotos}
             photoNames={report.findingsPhotoNames}
@@ -241,13 +257,14 @@ const handleRemoveFinding = (index) => {
           />
           </CardContent>
           </Card>
+          <Typography variant="h6"  color={theme.palette.primary.dark}>תוצאות בדיקה</Typography>
+
           <Card sx={{ mb: 3, border: '1px solid #e0e0e0', boxShadow: 'none' }}>
   <CardContent>
-              <Typography variant="h6" align='center' color={theme.palette.primary.dark}>Findings</Typography>
           <List>
             {findings.map((finding, index) => (
-              <ListItem key={index} sx={{ display: 'flex', alignItems: 'center' }}>
-                <ListItemText primary={finding} />
+        <ListItem key={index} sx={{ py: 0.5 }}> {/* Reduced padding */}
+        <ListItemText primary={finding} />
                 <IconButton onClick={() => handleRemoveFinding(index)}>
                   <DeleteIcon />
                 </IconButton>
@@ -265,11 +282,17 @@ const handleRemoveFinding = (index) => {
               sx={{ mr: 2 }}
             />
             <Button variant="contained" onClick={handleAddFinding}>
-              Add Finding
+              הוסף תוצאה
             </Button>
           </Box>
         </CardContent>
       </Card>
+      <FeedbackDialog
+        open={feedbackDialog.open}
+        onClose={onCloseFeedbackDialog}
+        message={feedbackDialog.message}
+        severity={feedbackDialog.severity}
+      />
       <Button variant="contained" color="primary" size="large" onClick={handleSubmit} sx={{ mt: 2 }}>
             Update Report
           </Button>

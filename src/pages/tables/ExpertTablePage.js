@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import BasicDataTable from '../../components/dataTables/BasicDataTable';
-import { Box ,Snackbar, Tooltip} from '@mui/material';
+import { Box ,Snackbar, Toolti,Fab,Tooltip} from '@mui/material';
 import Sidebar from '../../components/layout/Sidebar';
 import theme from '../../theme';
 import { ThemeProvider } from '@mui/material/styles';
@@ -43,12 +43,19 @@ const ExpertTablePage = () => {
   const renderActionButtons = (row) => {
     return (
       <>
-      <Tooltip title="ערוך פרטי טכנאי">
-        <EditIcon onClick={() => handleEdit(row)} />
-      </Tooltip>
+      <Box sx={{ display: 'flex', }}>
+        <Tooltip title="עדכון">
+          <Fab size="small"  sx={{bgcolor:'white'}} aria-label="edit" onClick={() => handleEdit(row)}>
+            <EditIcon sx={{color:'darkblue'}} />
+          </Fab>
+        </Tooltip>
+        <Box sx={{width:'10px'}}></Box>
       <Tooltip title="מחק">
-        <DeleteIcon onClick={() => handleDelete(row)} />
+      <Fab size="small" sx={{bgcolor:'white'}} aria-label="delete" onClick={() => handleDelete(row)} >
+        <DeleteIcon  sx={{color:'red'}}/>
+      </Fab>
       </Tooltip>
+      </Box>
 </>
     );
   };

@@ -97,15 +97,23 @@ const validate = (name, value) => {
             setFeedbackDialog({ open: true, message: "Expert created successfully.", severity: "success" });
             // navigate to another page or reset the form if necessary
           } else {
-            setFeedbackDialog({ open: true, message: errorMessage, severity: "error" });
+            // This assumes response.data.message exists. Handle accordingly if this might not be the case.
+            const errorMsg = response.data.message || "An unexpected error occurred";
+            console.log(errorMsg);
+            setFeedbackDialog({ open: true, message: errorMsg, severity: "error" });
           }
         })
         .catch(error => {
-          errorMessage = error.response.data.message;
-          setFeedbackDialog({ open: true, message: errorMessage, severity: "error" });
+          console.error(error);
+          // It's important to check if error.response exists and has a meaningful message
+          const errorMsg = (error.response && error.response.data && error.response.data.message) ? 
+                            error.response.data.message  : 
+                            "An error occurred while processing your request.";
+          console.error(errorMsg);
+          setFeedbackDialog({ open: true, message: errorMsg, severity: "error" });
         });
     }
-  };
+  };    
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 500, margin: 'auto' }}>
       

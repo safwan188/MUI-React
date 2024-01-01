@@ -183,11 +183,32 @@ const fetchReports = async () => {
   
     switch (status) {
       case 'assigned':
-        return <Badge badgeContent="Assigned" color="warning"></Badge>;
+        return (
+          <Tooltip title="Assigned">
+            <Fab size="small" sx={{ bgcolor: 'yellow', color: 'black' }} aria-label="assigned">
+              {/* You can add an icon here if you want */}
+            </Fab>
+          </Tooltip>
+        );
+  
       case 'completed':
-        return <Badge badgeContent="Completed" color="success"></Badge>;
+        return (
+          <Tooltip title="Completed">
+            <Fab size="small" sx={{ bgcolor: 'green', color: 'white' }} aria-label="completed">
+              {/* You can add an icon here if you want */}
+            </Fab>
+          </Tooltip>
+        );
+  
       case 'open':
-        return <Badge badgeContent="Open" color="info"></Badge>;
+        return (
+          <Tooltip title="Open">
+            <Fab size="small" sx={{ bgcolor: 'blue', color: 'white' }} aria-label="open">
+              {/* You can add an icon here if you want */}
+            </Fab>
+          </Tooltip>
+        );
+  
       default:
         return null;
     }
@@ -241,13 +262,14 @@ const renderCell = (columnLabel, cellValue, row) => {
         
   title="דוחות"
   menuItems={[
+    { label: 'סטטוס', value: 'status' },
+
     { label: 'מספר דוח', value: 'index' },
     { label: 'תאריך פתיחה', value: 'createdAt' },
     { label: 'שם לקוח', value: 'customer.name' },
     { label: 'כתובת', value: 'address' },
     { label: 'נושא', value: 'subject' },
     { label: 'טכנאי', value: 'expertName' },
-    { label: 'סטטוס', value: 'status' },
   ]}
   btn_txt={'הוסף דוח'}
   onAddNewClick={handleAddNew}
@@ -261,13 +283,14 @@ const renderCell = (columnLabel, cellValue, row) => {
         getStatusIcon={getStatusIcon}
         data={filteredReports} // pass the filtered data
         columns={[
+          { label: 'סטטוס', value: 'status' },
+
             { label: 'מספר דוח', value: 'index' },
             { label: 'תאריך פתיחה', value: (report) => (report.createdAt)},
             { label: 'שם לקוח', value: (report) => report.customer ? report.customer.name : 'Not Available' },
             { label: 'כתובת', value: (report) => report.property ? `${report.property.cityName}, ${report.property.street} ,${report.property.propertyNumber}` : 'Not Available' },
             { label: 'נושא', value: 'subject' },
             {label:'טכנאי',value:(report)=>report.expert?report.expert.name:'Not Available'},
-            { label: 'סטטוס', value: 'status' },
           
           ]}
           onEdit={handleEdit}

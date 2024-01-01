@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Tooltip, Typography, Button } from '@mui/material';
+import { Box, Tooltip, Typography, Button ,Fab} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
 
@@ -71,9 +71,14 @@ const CustomerTablePage = () => {
   };
 
   const renderActionButtons = (customer) => (
-    <Tooltip title="ערוך לקוח">
-      <EditIcon onClick={() => handleEdit(customer)} />
-    </Tooltip>
+   
+      <>
+        <Tooltip title="Edit">
+          <Fab size="small" color="primary" aria-label="edit" onClick={() => handleEdit(customer)}>
+            <EditIcon />
+          </Fab>
+        </Tooltip>
+     </>
   );
 
   const RenderCell = (label, content) => label === 'נכסים' && Array.isArray(content) ? (
