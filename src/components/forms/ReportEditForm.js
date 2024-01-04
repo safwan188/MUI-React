@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Paper, Button,TextField, Grid,List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton, Card, CardContent, Typography } from '@mui/material';
+import { Box, Paper, Button,TextField, Grid,List, ListItem, Divider, ListItemText, ListItemSecondaryAction, IconButton, Card, CardContent, Typography } from '@mui/material';
 import ReportService from '../../api/ReportService';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -37,30 +37,33 @@ const [availableStartingDates, setAvailableStartingDates] = useState([]);
       setNewPhotos([...newPhotos, ...selectedFiles]);
     }
   };
+  const fetchReport = async (id) => {
+    try {
+      const response = await ReportService.getReportById(id);
+      setReport(response.data);
+  
+      const formattedDates = response.data.availableStartingDates.map(dateTimeString => {
+        const dateTime = new Date(dateTimeString);
+        return {
+          date: dateTime.toISOString().split('T')[0], // Extract date part
+          time: dateTime.toTimeString().split(' ')[0]  // Extract time part
+        };
+      });
+  
+      setFindings(response.data.findings || []);
+      setAvailableStartingDates(formattedDates);
+      setSubject(response.data.subject);
+      setDescription(response.data.description);
+    } catch (error) {
+      console.error('Error fetching report:', error);
+    }
+  };
   useEffect(() => {
     if (reportId) {
-      ReportService.getReportById(reportId)
-        .then(response => {
-          setReport(response.data);
-  
-          const formattedDates = response.data.availableStartingDates.map(dateTimeString => {
-            const dateTime = new Date(dateTimeString);
-            return {
-              date: dateTime.toISOString().split('T')[0], // Extract date part
-              time: dateTime.toTimeString().split(' ')[0]  // Extract time part
-            };
-          });
-          
-          setFindings(response.data.findings || []);
-          setAvailableStartingDates(formattedDates);
-          setSubject(response.data.subject);
-          setDescription(response.data.description);
-        })
-        .catch(error => {
-          console.error('Error fetching report:', error);
-        });
+      fetchReport(reportId);
     }
-  }, [reportId]);
+  }, [reportId]); // fetchReport function shouldn't be in the dependency array
+  
   
   const handleDateTimeChange = (event, index, type) => {
     const updatedDates = [...availableStartingDates];
@@ -114,11 +117,18 @@ const handleFindingPhotoSelect = (event) => {
   }
 };
 const handleAddFinding = () => {
+  console.log("Current Findings:", findings); // Log current findings
+  console.log("New Finding to Add:", newFinding.trim()); // Log new finding to be added
+
   if (newFinding.trim()) {
-    setFindings([...findings, newFinding.trim()]);
+    const updatedFindings = [...findings, newFinding.trim()];
+    setFindings(updatedFindings);
     setNewFinding('');
+
+    console.log("Updated Findings:", updatedFindings); // Log updated findings
   }
 };
+
 
 const handleRemoveFinding = (index) => {
   setFindings(findings.filter((_, idx) => idx !== index));
@@ -126,10 +136,14 @@ const handleRemoveFinding = (index) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (newFinding.trim()) {
-      setFindings([...findings, newFinding.trim()]);
-      setNewFinding('');
-    }
+
+   if (newFinding.trim()) {
+    setFindings(prevFindings => [...prevFindings, newFinding.trim()]);
+    setNewFinding('');
+  }
+  const formattedFindings = findings.map(finding => finding.trim());
+
+  console.log("Findings:", findings); // Log findings
     const formattedDates = availableStartingDates.map(dt => {
       return new Date(dt.date + 'T' + dt.time).toISOString();
     });
@@ -144,7 +158,7 @@ const handleRemoveFinding = (index) => {
         formattedDates,
         subject,
         description,
-        findings 
+        formattedFindings 
       );      
       if (response.status === 200) {
         setFeedbackDialog({ open: true, message: 'דוח עודכן בהצלחה', severity: 'success' });
@@ -160,6 +174,7 @@ const handleRemoveFinding = (index) => {
       // Clear the newPhotos and removedPhotos states
       setNewPhotos([]);
       setRemovedPhotos([]);
+      fetchReport(reportId);
     } catch (error) {
       console.error('Error updating client photos:', error);
     }
@@ -181,23 +196,28 @@ const handleRemoveFinding = (index) => {
                 <Typography variant="body2">נכס: {`${report.property?.cityName} ${report.property?.street} ${report.property?.propertyNumber}`}</Typography>
               </CardContent>
             </Card>
-            <Typography variant="h6" color={theme.palette.primary.dark}>טכנאי</Typography>
-            <Card elevation={0} sx={{ mb: 0.5, border: '1px solid #e0e0e0' }}>
-            <CardContent sx={{ p: 2 }}> {/* Reduced padding */}
-                <Typography variant="body2">שם: {report.expert?.name}</Typography>
-                <Typography variant="body2">טלפון: {report.expert?.phone}</Typography>
-                <Typography variant="body2">
-  תאריך בדיקה: {new Intl.DateTimeFormat('he-IL', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  }).format(new Date(report.inspectionDate))}
-</Typography>
-            </CardContent>
-            </Card>
+            {report.expert && (<>
+                          <Typography variant="h6" color={theme.palette.primary.dark}>טכנאי</Typography>
+
+  <Card elevation={0} sx={{ mb: 0.5, border: '1px solid #e0e0e0' }}>
+    <CardContent sx={{ p: 2 }}> {/* Reduced padding */}
+      <Typography variant="body2">שם: {report.expert.name}</Typography>
+      <Typography variant="body2">טלפון: {report.expert.phone}</Typography>
+      <Typography variant="body2">
+        תאריך בדיקה: {new Intl.DateTimeFormat('he-IL', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }).format(new Date(report.inspectionDate))}
+      </Typography>
+    </CardContent>
+  </Card>
+  </>
+)}
+
 
             <Typography variant="h6" color={theme.palette.primary.dark}>פירוט הדוח</Typography>
 
@@ -256,7 +276,7 @@ const handleRemoveFinding = (index) => {
             newPhotos={newPhotos}
             onPhotoSelect={handleFileSelect}
             onRemovePhoto={handleRemovePhoto}
-            uploadButtonLabel="Upload Client Photo"
+            uploadButtonLabel="עדכון תמונות לקוח"
           />
           </CardContent>
           </Card>
@@ -270,7 +290,7 @@ const handleRemoveFinding = (index) => {
             newPhotos={newFindingPhotos}
             onPhotoSelect={handleFindingPhotoSelect}
             onRemovePhoto={handleRemoveFindingPhoto}
-            uploadButtonLabel="Upload Finding Photo"
+            uploadButtonLabel="עדכון תמונות בדיקה"
             isFindingPhotos={true}
           />
           </CardContent>
@@ -282,11 +302,14 @@ const handleRemoveFinding = (index) => {
           <List>
             {findings.map((finding, index) => (
         <ListItem key={index} sx={{ py: 0.5 }}> {/* Reduced padding */}
+
         <ListItemText primary={finding} />
                 <IconButton onClick={() => handleRemoveFinding(index)}>
                   <DeleteIcon />
                 </IconButton>
+                <Divider />
               </ListItem>
+              
             ))}
           </List>
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
@@ -312,7 +335,7 @@ const handleRemoveFinding = (index) => {
         severity={feedbackDialog.severity}
       />
       <Button variant="contained" color="primary" size="large" onClick={handleSubmit} sx={{ mt: 2 }}>
-            Update Report
+            עדכן דוח
           </Button>
         </Paper>
       </Box>
