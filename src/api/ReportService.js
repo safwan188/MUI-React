@@ -1,9 +1,10 @@
 import axios from 'axios';
+const apiurl=process.env.REACT_APP_API_URL
 
 class ReportService {
   constructor() {
     this.apiClient = axios.create({
-      baseURL: 'http://localhost:5000' + '/api/reports', // Adjust the base URL to your reports API endpoint
+      baseURL: apiurl + '/api/reports', // Adjust the base URL to your reports API endpoint
       headers: {
         'Content-Type': 'application/json',
       },

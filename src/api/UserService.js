@@ -1,9 +1,10 @@
 import axios from 'axios';
+const apiurl=process.env.REACT_APP_API_URL
 
 class UserService {
   constructor() {
     this.apiClient = axios.create({
-      baseURL: 'http://localhost:5000/api',
+      baseURL: apiurl+'/api',
       // You can set common headers here if needed
     });
   }

@@ -1,9 +1,10 @@
 import axios from 'axios';
+const apiurl=process.env.REACT_APP_API_URL
 
 class ExpertService {
   constructor() {
     this.apiClient = axios.create({
-      baseURL: 'http://localhost:5000' + '/api/experts',
+      baseURL: apiurl + '/api/experts',
       headers: {
         'Content-Type': 'application/json',
       },

@@ -1,10 +1,10 @@
 // ExpertRequestService.js
 import axios from 'axios';
-
+const apiurl=process.env.REACT_APP_API_URL
 class ExpertRequestService {
   constructor() {
     this.apiClient = axios.create({
-      baseURL: 'http://localhost:5000/api/expertrequests', // Adjust the base URL as per your API endpoint
+      baseURL:  apiurl+'/api/expertrequests', // Adjust the base URL as per your API endpoint
       headers: {
         'Content-Type': 'application/json',
       },
