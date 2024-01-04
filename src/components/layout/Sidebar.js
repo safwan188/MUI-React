@@ -17,7 +17,6 @@ const Sidebar = () => {
     { text: 'דוחות', icon: <ReportIcon />, path: '/reports' },
     { text: 'לקוחות', icon: <PeopleIcon />, path: '/customers' },
     { text: 'קבלנים', icon: <EngineeringIcon />, path: '/experts' },
-    { text: 'בקשות', icon: <RequestPageIcon />, path: '/expertrequests' },
   ];
 
   const handleListItemClick = (path) => {
