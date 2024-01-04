@@ -72,7 +72,9 @@ class ReportService {
     });
   }
   
-  
+  getreportrequests(id) {
+    return this.apiClient.get('/reportrequests/' + id);     
+  }
   updateReport(updateData) {
     const  id  = updateData.id;
     console.log(id);

@@ -1,14 +1,28 @@
 import React from 'react';
-import { Dialog, DialogTitle, CircularProgress,DialogContent, Snackbar,DialogActions, Button, Autocomplete, TextField, List, ListItem, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Dialog, DialogTitle, CircularProgress,DialogContent, Snackbar,DialogActions, Button,Divider, Autocomplete, TextField, List, ListItem, Typography, useMediaQuery, useTheme } from '@mui/material';
 import ReportService from '../../api/ReportService';
 
 const AssignExpertDialog = ({ open, onClose, experts, report, onAssign, onAssignmentComplete }) => {
   const [selectedExpert, setSelectedExpert] = React.useState(null);
   const [selectedDate, setSelectedDate] = React.useState(null);
+  const [requests, setRequests] = React.useState([]); // Add this line
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const [loading, setLoading] = React.useState(false);
   const [snackbar, setSnackbar] = React.useState({ open: false, message: 'test', severity: 'info' });
+  const handleAccept = async (request) => {
+    setSelectedExpert(request.expert);
+    setSelectedDate(request.date);
+  };
+  React.useEffect(() => {
+    if (report) {
+      const response = ReportService.getreportrequests(report._id);
+      response.then((res) => {
+        setRequests(res.data);
+      });
+    }
+  }, [report]);
+
 const handleAssign = async () => {
   if (!selectedExpert || !selectedDate) {
     console.log("Expert and Date are required.");
@@ -48,6 +62,58 @@ const handleAssign = async () => {
     setLoading(false);
   }
 };
+const renderRequestsList = () => {
+  if (requests.length === 0) {
+    return <Typography sx={{ mt: 2 }}>No requests available</Typography>;
+  }
+
+  return (
+    <>
+      <Typography sx={{ mt: 2 }}>בקשות טכנאים לדוח</Typography>
+      <List sx={{ maxHeight: 200, overflow: 'auto', bgcolor: 'background.paper', mt: 2, border: 1, borderColor: 'divider' }}>
+        {requests.map((request, index) => (
+          <ListItem 
+            key={index} 
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', '&:hover': { bgcolor: 'action.hover' } }}
+          >
+            <div>
+              <Typography variant="body1">טכנאי: {request.expert.name}</Typography>
+              <Typography variant="body2">תאריך בדיקה:
+              {new Intl.DateTimeFormat('he-IL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }).format(new Date(request.date))}
+              </Typography> 
+       
+            </div>
+            {request.status === 'pending' && (
+              <div>
+                <Button 
+                  variant="outlined" 
+                  color="primary" 
+                  onClick={() => handleAccept(request)}
+
+                  sx={{ mr: 1 }}
+                >
+                  בחר
+                </Button>
+       
+              </div>
+            )}
+                     <Divider />
+
+          </ListItem>
+
+        ))}
+      </List>
+    </>
+  );
+};
+
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
@@ -68,7 +134,14 @@ const handleAssign = async () => {
             onClick={() => setSelectedDate(date)}
             sx={{ '&.Mui-selected, &.Mui-selected:hover': { bgcolor: 'primary.main', color: 'primary.contrastText' } }}
           >
-{new Date(date).toLocaleDateString()} {new Date(date).toLocaleTimeString()}
+   {new Intl.DateTimeFormat('he-IL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }).format(new Date(date))}
           </ListItem>
         ))}
       </List>
@@ -79,12 +152,17 @@ const handleAssign = async () => {
     <Dialog open={open} onClose={onClose} fullScreen={fullScreen} fullWidth maxWidth="sm">
     <DialogTitle sx={{ bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText }}>בחר טכנאי</DialogTitle>
     <DialogContent>
+    {renderRequestsList()}  {/* Render the requests list here */}
+
         <Autocomplete
           options={experts}
           getOptionLabel={(option) => option.name}
           renderInput={(params) => <TextField {...params} label="בחר טכנאי" variant="outlined" margin="dense" />}
-          onChange={(event, newValue) => setSelectedExpert(newValue)}
-          sx={{ mt: 2 }}
+          value={selectedExpert}
+
+          onChange={(event, newValue) => {
+            setSelectedExpert(newValue);
+          }}          sx={{ mt: 2 }}
         />
         {renderDateList()}
       </DialogContent>

@@ -181,6 +181,24 @@ const handleRemoveFinding = (index) => {
                 <Typography variant="body2">נכס: {`${report.property?.cityName} ${report.property?.street} ${report.property?.propertyNumber}`}</Typography>
               </CardContent>
             </Card>
+            <Typography variant="h6" color={theme.palette.primary.dark}>טכנאי</Typography>
+            <Card elevation={0} sx={{ mb: 0.5, border: '1px solid #e0e0e0' }}>
+            <CardContent sx={{ p: 2 }}> {/* Reduced padding */}
+                <Typography variant="body2">שם: {report.expert?.name}</Typography>
+                <Typography variant="body2">טלפון: {report.expert?.phone}</Typography>
+                <Typography variant="body2">
+  תאריך בדיקה: {new Intl.DateTimeFormat('he-IL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }).format(new Date(report.inspectionDate))}
+</Typography>
+            </CardContent>
+            </Card>
+
             <Typography variant="h6" color={theme.palette.primary.dark}>פירוט הדוח</Typography>
 
             <Card sx={{ mb: 1, border: '1px solid #e0e0e0', boxShadow: 'none' }}>
