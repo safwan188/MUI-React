@@ -43,7 +43,6 @@ const LoginForm = ({ onLogin }) => {
     <CssBaseline />
     <Box
       sx={{
-        marginTop: 2,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -59,7 +58,7 @@ const LoginForm = ({ onLogin }) => {
          {/* Logo Image */}
         
 
-         <img src="/Picture2.png" alt="Company Logo" style={{ width: '250px', height: 'auto', marginBottom: '15px' }} />
+         <img src="/Picture2.png" alt="Company Logo" style={{ maxWidth:'100%', height: 'auto', marginBottom: '15px' }} />
         
         {error && <Typography color="error" sx={{ mt: 2 }}>{error}</Typography>}
         <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1, width: '100%' }}>

@@ -122,6 +122,15 @@ const CustomerTablePage = () => {
       `${prop.cityName} ${prop.street} ${prop.propertyNumber}`.toLowerCase().includes(query)
     ) : cellValue.includes(query);
   });
+// Define toolbarProps object
+const toolbarProps = {
+  toolbarTitle: title,
+  includedateRange: false,
+  menuItems,
+  onSearchChange,
+  onColumnChange,
+
+};
 
   return (
     <Box sx={{ display: 'flex', bgcolor: theme.palette.background.default }}>
@@ -129,6 +138,8 @@ const CustomerTablePage = () => {
       <Box component="main" sx={{
     flexGrow: 1,
     height: '100%',
+    overflow: 'auto',
+
     p: 3,
     bgcolor: 'background.paper', // Consider a lighter shade that contrasts well with the content
     boxShadow: '0px 3px 6px rgba(0,0,0,0.1)', // A subtle shadow for depth
@@ -139,8 +150,9 @@ const CustomerTablePage = () => {
     },
     // Further style adjustments can be made here
   }}>
-        <DataToolbar {...{ menuItems, onAddNewClick, onSearchChange, onColumnChange, selectedColumn, searchQuery , title,btn_txt}} />
-        <BasicDataTable {...{ data: filteredCustomers, columns: menuItems, renderCell: RenderCell, renderActionButtons }} />
+        <BasicDataTable {...{ data: filteredCustomers, columns: menuItems, renderCell: RenderCell, renderActionButtons,onAddNewClick ,title,toolbarProps}} >
+
+        </BasicDataTable> 
         <EditDialog {...{ open: editModalOpen, onClose: handleEditModalClose, title: "ערוך לקוח", FormComponent: CustomerEditForm, formProps: { customer: customerToEdit }, formId: "customer-edit-form", onSubmit: handleCustomerUpdate }} />
         <SnackBarComponent {...{ open: snackbarOpen, handleClose: handleSnackbarClose, message: snackbarMessage, severity: snackbarSeverity }} />
         

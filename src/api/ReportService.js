@@ -33,6 +33,12 @@ class ReportService {
   getAllReports() {
     return this.apiClient.get('/');
   }
+// In ReportService.js
+downloadReportPdf(reportId) {
+  return this.apiClient.get(`/${reportId}/pdf`, {
+    responseType: 'blob', // Important: indicates that the response should be treated as a Blob
+  });
+}
 
   getReportById(id) {
     return this.apiClient.get(`/${id}`);

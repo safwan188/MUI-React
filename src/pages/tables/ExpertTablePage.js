@@ -145,6 +145,13 @@ const ExpertTablePage = () => {
     console.log('Navigating to add expert page');
     navigate('/add-expert');
   };
+  const toolbarProps = {
+    menuItems,
+    selectedColumn,
+    searchQuery,
+    onSearchChange: handleSearchChange,
+    onColumnChange: handleColumnChange,
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -164,17 +171,11 @@ const ExpertTablePage = () => {
     },
     // Further style adjustments can be made here
   }}>
-          <DataToolbar
-            title={'קבלנים'}
-            menuItems={menuItems}
-            onSearchChange={handleSearchChange}
-            onColumnChange={handleColumnChange}
-            onAddNewClick={handleAddNew}
-            selectedColumn={selectedColumn}
-            searchQuery={searchQuery}
-            btn_txt={'הוסף קבלן'}
-          />
+         
           <BasicDataTable
+            toolbarProps={toolbarProps}
+                      title={'קבלנים'}
+
             renderActionButtons={renderActionButtons}
             data={filteredExperts}
             columns={menuItems.map(item => ({ label: item.label, value: item.value }))} // Pass only the label and value properties

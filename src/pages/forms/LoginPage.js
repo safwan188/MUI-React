@@ -17,7 +17,9 @@ const LoginPage = () => {
           height: '100vh',
           display: 'flex',
           flexDirection: 'column',
+
           justifyContent: 'center',
+
           backgroundImage: 'url(/tt.png)', // Replace with your desired background image
           backgroundRepeat: 'no-repeat',
           backgroundSize: 'cover',

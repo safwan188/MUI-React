@@ -11,7 +11,8 @@ import ExpertService from '../../api/ExpertService';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import AssignExpertDialog from '../../components/common/AssignExpertDialog';
 import DataToolbar from '../../components/common/DataToolbar';
-import EditIcon from '@mui/icons-material/Edit';
+import EditIcon  from '@mui/icons-material/Edit';
+import DownloadIcon from '@mui/icons-material/Download';
 const ReportTablePage = () => {
   const navigate = useNavigate();
   const [reports, setReports] = useState([]);
@@ -172,9 +173,38 @@ const fetchReports = async () => {
             <EditIcon />
           </Fab>
         </Tooltip>
-     </>
+        {/* Conditionally render the download button if report.status is 'completed' */}
+        {report.status === 'completed' && (
+          <Tooltip title="Download">
+            <Fab size="small" color="secondary" aria-label="download" onClick={() => handleDownload(report)}>
+              <DownloadIcon />
+            </Fab>
+          </Tooltip>
+        )}
+      </>
     );
   };
+ // In ReportTablePage.js
+const handleDownload = async (report) => {
+  try {
+    const response = await ReportService.downloadReportPdf(report._id);
+    const file = new Blob([response.data], { type: 'application/pdf' });
+
+    const fileURL = URL.createObjectURL(file);
+    const fileLink = document.createElement('a');
+    fileLink.href = fileURL;
+    fileLink.setAttribute('download', `Report_${report._id}.pdf`); // Customize the file name as needed
+    document.body.appendChild(fileLink);
+    
+    fileLink.click();
+
+    URL.revokeObjectURL(fileURL);
+    document.body.removeChild(fileLink);
+  } catch (error) {
+    console.error('Error downloading the PDF report:', error);
+  }
+};
+
 
   
  
@@ -240,7 +270,25 @@ const renderCell = (columnLabel, cellValue, row) => {
       return cellValue;
   }
 };
+const toolbarProps = {
+  toolbarTitle: "דוחות",
+  menuItems: [
+    { label: 'סטטוס', value: 'status' },
 
+    { label: 'מספר דוח', value: 'index' },
+    { label: 'תאריך פתיחה', value: 'createdAt' },
+    { label: 'שם לקוח', value: 'customer.name' },
+    { label: 'כתובת', value: 'address' },
+    { label: 'נושא', value: 'subject' },
+    { label: 'טכנאי', value: 'expertName' },
+    // ... other menu items ...
+  ],
+  selectedColumn: queryObject.column,
+  includeDateRange: true,
+  onSearchChange: handleSearchChange,
+  onColumnChange: handleColumnChange,
+  // ... other necessary props ...
+};
   return (
     <Box sx={{ display: 'flex', bgcolor: theme.palette.background.default }}>
       <Sidebar />
@@ -258,27 +306,9 @@ const renderCell = (columnLabel, cellValue, row) => {
     },
     // Further style adjustments can be made here
   }}>
-      <DataToolbar
-        
-  title="דוחות"
-  menuItems={[
-    { label: 'סטטוס', value: 'status' },
-
-    { label: 'מספר דוח', value: 'index' },
-    { label: 'תאריך פתיחה', value: 'createdAt' },
-    { label: 'שם לקוח', value: 'customer.name' },
-    { label: 'כתובת', value: 'address' },
-    { label: 'נושא', value: 'subject' },
-    { label: 'טכנאי', value: 'expertName' },
-  ]}
-  btn_txt={'הוסף דוח'}
-  onAddNewClick={handleAddNew}
-  selectedColumn={queryObject.column}
-  includeDateRange={true}
-  onSearchChange={handleSearchChange}
-  onColumnChange={handleColumnChange}
-/>
+ 
         <BasicDataTable
+        toolbarProps={toolbarProps}
         renderActionButtons={renderActionButtons}
         getStatusIcon={getStatusIcon}
         data={filteredReports} // pass the filtered data

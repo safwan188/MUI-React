@@ -1,18 +1,25 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Box, Typography } from '@mui/material';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
-import theme from '../../theme';
+import React, { useState } from 'react';
+import { useMediaQuery, useTheme, IconButton } from '@mui/material';
+import { Drawer, List, ListItem, ListItemIcon, ListItemText, Box, Typography } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu'; // Import the Menu icon
 import ReportIcon from '@mui/icons-material/Report';
 import PeopleIcon from '@mui/icons-material/People';
 import EngineeringIcon from '@mui/icons-material/Engineering';
-import RequestPageIcon from '@mui/icons-material/RequestPage';
-
+import { useNavigate } from 'react-router-dom';
 const drawerWidth = 170;
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [mobileOpen, setMobileOpen] = useState(false);
+  console.log(isMobile); // Should be true on mobile screens
+
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
   const menuItems = [
     { text: 'דוחות', icon: <ReportIcon />, path: '/reports' },
     { text: 'לקוחות', icon: <PeopleIcon />, path: '/customers' },
@@ -21,24 +28,44 @@ const Sidebar = () => {
 
   const handleListItemClick = (path) => {
     navigate(path);
+    if (isMobile) setMobileOpen(false); // Close the drawer when a menu item is clicked on mobile
   };
+
   return (
+    <>
+    {isMobile && (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          p: 1,
+          bgcolor: theme.palette.primary.main,
+        }}
+      >
+        <IconButton
+          onClick={handleDrawerToggle}
+          sx={{ color: 'white' }}
+        >
+          <MenuIcon />
+        </IconButton>
+      </Box>
+    )}
+
     <Drawer
-      variant="permanent"
-      sx={{
+    variant={isMobile ? 'temporary' : 'permanent'}
+    open={isMobile ? mobileOpen : true}
+    onClose={handleDrawerToggle}
+    sx={{
+      width: drawerWidth,
+      '& .MuiDrawer-paper': {
         width: drawerWidth,
-        flexShrink: 0,
-        overflowY: 'hidden', // Hide vertical scrollbar
-        '& .MuiDrawer-paper': {
-          width: drawerWidth,
-          boxSizing: 'border-box',
-          backgroundColor: theme.palette.primary.main,
-          color: '#ffffff',
-          maxHeight: '100vh',
-          overflowY: 'hidden', // Hide vertical scrollbar
-        },
-      }}
-    >
+        boxSizing: 'border-box',
+        backgroundColor: theme.palette.primary.main,
+        color: '#ffffff',
+      },
+    }}
+  >
+      
       <Box
         sx={{
           p: 3,
@@ -63,6 +90,7 @@ const Sidebar = () => {
         ))}
       </List>
     </Drawer>
+    </>
   );
 };
 
